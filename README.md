@@ -11,7 +11,7 @@ evidence-backed hypotheses about the cause.
 
 **Status:** work in progress. Milestones M0–M3 are done, M4 (LLM investigation agent) is built and
 tested against a scripted fake LLM but has not been run against the live API yet. `sentinel run` and
-`sentinel eval` are still stubs. See [HANDOFF.md](HANDOFF.md) for detailed status and
+`sentinel eval` are still stubs. See [Team](#team) for who owns what, [HANDOFF.md](HANDOFF.md) for detailed status and
 [PRD.md](PRD.md) for the full spec.
 
 ## How it works
@@ -96,11 +96,28 @@ To try the LLM investigation agent, set `ANTHROPIC_API_KEY` and call
 
 `sentinel/api`, `baselines`, `eval` and `ui` are placeholders for later milestones.
 
-## Roadmap
+## Team
 
-- **M5** Critic agent and reporting (Markdown + JSON, confidence computed in code)
-- **M6** Baselines (single agent + pandas, no-Critic, stats-only) and `sentinel eval`
-- **M7** Streamlit UI and daily scheduling
-- **M8** A public dataset adapter (Olist or GA4 sample) and a results write-up
+### Done so far: Eashan Singh
+
+- **M0** Skeleton: repo layout, Pydantic models, CLI, config, CI
+- **M1** Simulator: data generator, scenario injector, 28 scenarios, ground truth
+- **M2** Ingestion and data-quality checks
+- **M3** Detection, metric-tree decomposition, drill-down, analysis tools, evidence store
+- **M4** LLM client and investigation agent with the numeric verifier (tested against a scripted fake LLM)
+
+### Remaining work
+
+| Owner | Milestones | Scope |
+|---|---|---|
+| **Eashan Singh** | M4 live test, M5 | Smoke-test the investigation agent against the real API. Build the Critic agent (the six checks, confidence computed in code), the report writer (Markdown + JSON, numeric check on the full text) and the orchestrator behind `sentinel run` (DQ → detect → investigate → critic → report, saved under `runs/<run_id>/`). |
+| **Arpit** | M6 | Baselines: A (single agent + pandas, sandboxed code execution), No-Critic and stats-only (`Tools.find_causes`). Build `sentinel eval` → `results.csv` + `report.md` across all scenarios × 3 seeds, and settle the scoring rules for partial filter matches and two-cause scenarios (HANDOFF §7 items 12–15). |
+| **Krish** | M7, M8 | Streamlit UI (run list, report view, click a claim to see its query and result, eval dashboard), a daily scheduler (cron) and an optional Slack webhook. Build a public-dataset adapter (Olist or GA4 sample) that writes the same per-day parquet layout as the simulator. |
+| **Everyone** | M8 | Final write-up: results table, limitations. |
+
+**Hand-offs:** Arpit's eval and Krish's UI both consume the `Report` model in
+[sentinel/models/__init__.py](sentinel/models/__init__.py) and the `runs/<run_id>/` output from
+`sentinel run`. Agree on that output format with Eashan early, and use stub reports until M5 lands.
+Log design decisions in [DECISIONS.md](DECISIONS.md).
 
 Design decisions and their reasoning are logged in [DECISIONS.md](DECISIONS.md).
