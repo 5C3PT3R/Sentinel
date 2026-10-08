@@ -9,4 +9,5 @@ jobs:
         with: {python-version: "3.11"}
       - run: pip install -e .[dev]
       - run: ruff check .
+      - run: sentinel simulate --out data/sim --no-plot  # data tests skip without it
       - run: pytest

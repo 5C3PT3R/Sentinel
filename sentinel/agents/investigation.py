@@ -116,7 +116,11 @@ def _finalize(sub: dict, tools: Tools, day: date, baseline: str) -> Investigatio
             continue
         ids = [e for e in h["evidence_ids"] if e in tools.store.items]
         # contribution is always recomputed in code; the LLM's own figure is never used
-        c = tools.segment_contribution(h["segment_filters"], str(day), baseline)
+        try:
+            c = tools.segment_contribution(h["segment_filters"], str(day), baseline)
+        except Exception as e:  # noqa: BLE001 - a bad filter drops one hypothesis, not the run
+            res.dropped.append(f"{h['statement'][:60]!r}: bad segment_filters ({e})")
+            continue
         hyps.append(Hypothesis(
             id=f"H{i}", statement=h["statement"], segment_filters=h["segment_filters"],
             chain=[e for e in h.get("chain", []) if e in tools.store.items],

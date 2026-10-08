@@ -17,5 +17,8 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["sentinel*"]
 
+[tool.setuptools.package-data]
+"sentinel.agents.prompts" = ["*.md"]
+
 [tool.ruff]
 line-length = 100
