@@ -1,0 +1,24 @@
+- {id: S13, date: 2026-04-11, type: tracking_bug, category: data_issue, filters: {os: ios},
+   params: {event_type: add_to_cart, drop_rate: 1.0}, expected_root_cause: "ios add_to_cart events not logged",
+   expected_filters: [{os: ios}], expected_dq_status: WARN, expected_detect: false}
+- {id: S14, date: 2026-04-16, type: tracking_bug, category: data_issue, filters: {os: android},
+   params: {event_type: payment_success, drop_rate: 0.6}, expected_root_cause: "android payment_success events under-logged",
+   expected_filters: [{os: android}], expected_dq_status: WARN, expected_detect: false}
+- {id: S15, date: 2026-04-21, type: schema_change, category: data_issue,
+   params: {table: events, rename: {error_code: err_code}}, expected_root_cause: "events.error_code renamed to err_code",
+   expected_filters: [], expected_dq_status: BLOCK, expected_detect: false}
+- {id: S16, date: 2026-04-26, type: schema_change, category: data_issue,
+   params: {table: sessions, rename: {os: operating_system}}, expected_root_cause: "sessions.os renamed to operating_system",
+   expected_filters: [], expected_dq_status: BLOCK, expected_detect: false}
+- {id: S17, date: 2026-05-01, type: late_data, category: data_issue,
+   params: {tables: [sessions, events, orders], keep_fraction: 0.35}, expected_root_cause: "only 35% of the day's data arrived",
+   expected_filters: [], expected_dq_status: BLOCK, expected_detect: false}
+- {id: S18, date: 2026-05-06, type: late_data, category: data_issue,
+   params: {tables: [events], keep_fraction: 0.6}, expected_root_cause: "events table 60% loaded, orders complete",
+   expected_filters: [], expected_dq_status: BLOCK, expected_detect: false}
+- {id: S19, date: 2026-05-11, type: duplicate_events, category: data_issue,
+   params: {dup_rate: 0.3}, expected_root_cause: "30% duplicated event rows",
+   expected_filters: [], expected_dq_status: WARN, expected_detect: false}
+- {id: S20, date: 2026-05-16, type: null_spike, category: data_issue,
+   params: {table: sessions, column: app_version, null_rate: 0.5}, expected_root_cause: "sessions.app_version 50% null",
+   expected_filters: [], expected_dq_status: WARN, expected_detect: false}

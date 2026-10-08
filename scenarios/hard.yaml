@@ -1,0 +1,30 @@
+# Simpson's paradox: only the traffic mix shifts; per-segment behaviour is unchanged.
+- {id: S21, date: 2026-05-21, type: mix_shift, category: business, filters: {traffic_source: paid},
+   params: {traffic_factor: 2.5}, expected_root_cause: "mix shift toward low-converting paid traffic (no behaviour change)",
+   expected_filters: [{traffic_source: paid}], expected_dq_status: PASS, expected_detect: true}
+- {id: S22, date: 2026-05-26, type: mix_shift, category: business, filters: {traffic_source: social},
+   params: {traffic_factor: 3.0}, expected_root_cause: "mix shift toward low-converting social traffic (no behaviour change)",
+   expected_filters: [{traffic_source: social}], expected_dq_status: PASS, expected_detect: true}
+# Two simultaneous causes.
+- id: S23
+  date: 2026-05-31
+  type: composite
+  category: business
+  expected_root_cause: "android + upi failures AND paid traffic drop"
+  expected_filters: [{os: android, payment_method: upi}, {traffic_source: paid}]
+  expected_dq_status: PASS
+  expected_detect: true
+  effects:
+    - {type: payment_failure_spike, filters: {os: android, payment_method: upi}, params: {failure_rate_to: 0.85}}
+    - {type: traffic_drop, filters: {traffic_source: paid}, params: {traffic_factor: 0.5}}
+- id: S24
+  date: 2026-06-05
+  type: composite
+  category: business
+  expected_root_cause: "home stock-out AND BR traffic drop"
+  expected_filters: [{category: home}, {country: BR}]
+  expected_dq_status: PASS
+  expected_detect: true
+  effects:
+    - {type: stockout, filters: {category: home}, params: {atc_mult: 0.15}}
+    - {type: regional_outage, filters: {country: BR}, params: {traffic_factor: 0.2}}

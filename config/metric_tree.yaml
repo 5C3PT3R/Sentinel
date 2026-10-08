@@ -1,0 +1,6 @@
+# Every rate = numerator / denominator, so the product holds exactly (see DECISIONS D3).
+revenue: {op: mul, children: [orders, aov]}
+orders: {op: mul, children: [sessions, conversion_rate]}
+conversion_rate:
+  op: mul
+  children: [atc_rate, checkout_start_rate, payment_attempt_rate, payment_success_rate]

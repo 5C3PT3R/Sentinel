@@ -1,0 +1,10 @@
+runs/
+.env
+data/
+*.parquet
+*.duckdb
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/

@@ -1,0 +1,12 @@
+model: claude-sonnet-5-5
+temperature: 0
+seed: 42
+detection:
+  min_rel_change: 0.05
+  baseline_weeks: 4
+budgets: {investigation_tool_calls: 25, critic_tool_calls: 10, revise_loops: 2}
+simulator: {days: 180, sessions_per_day: 10000}
+simulator_extra:
+  start_date: 2026-01-01
+  sale_days: [2026-03-14, 2026-05-23, 2026-06-20]
+  out_dir: data/sim

@@ -1,0 +1,11 @@
+- {id: S25, date: 2026-06-10, type: no_anomaly, category: none, expected_root_cause: null,
+   expected_filters: [], expected_dq_status: PASS, expected_detect: false, params: {}}
+- {id: S26, date: 2026-06-15, type: no_anomaly, category: none, expected_root_cause: null,
+   expected_filters: [], expected_dq_status: PASS, expected_detect: false, params: {}}
+# Sale day: the sale itself is built into 2026-06-20 (settings.yaml); should be explained by calendar, not alerted.
+- {id: S27, date: 2026-06-20, type: calendar_sale, category: none, expected_root_cause: null,
+   expected_filters: [], expected_dq_status: PASS, expected_detect: false, params: {}}
+# Sub-threshold wobble (~2% conversion dip on web) must not alert.
+- {id: S28, date: 2026-06-25, type: subtle_noise, category: none, filters: {platform: web},
+   params: {checkout_mult: 0.95}, expected_root_cause: null,
+   expected_filters: [], expected_dq_status: PASS, expected_detect: false}

@@ -1,0 +1,4 @@
+# Registered schema used by the DQ agent (moved up from v2, see DECISIONS D8).
+sessions: {session_id: str, ts: timestamp, platform: str, os: str, app_version: str, country: str, traffic_source: str, device_type: str, new_vs_returning: str, category: str}
+events: {event_id: str, session_id: str, ts: timestamp, event_type: str, error_code: str, payment_method: str, category: str}
+orders: {order_id: str, session_id: str, ts: timestamp, amount: float, items: int, payment_method: str}

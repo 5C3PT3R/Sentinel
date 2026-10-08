@@ -1,0 +1,36 @@
+- {id: S01, date: 2026-02-10, type: payment_failure_spike, category: business, filters: {os: android, payment_method: upi},
+   params: {failure_rate_to: 0.85}, expected_root_cause: "android + upi payment failures",
+   expected_filters: [{os: android, payment_method: upi}], expected_dq_status: PASS, expected_detect: true}
+- {id: S02, date: 2026-02-15, type: payment_failure_spike, category: business, filters: {os: ios, payment_method: card},
+   params: {failure_rate_to: 0.7, error_code: "3DS_FAIL"}, expected_root_cause: "ios + card payment failures",
+   expected_filters: [{os: ios, payment_method: card}], expected_dq_status: PASS, expected_detect: true}
+- {id: S03, date: 2026-02-20, type: traffic_drop, category: business, filters: {traffic_source: paid},
+   params: {traffic_factor: 0.4}, expected_root_cause: "paid traffic drop",
+   expected_filters: [{traffic_source: paid}], expected_dq_status: PASS, expected_detect: true}
+- {id: S04, date: 2026-02-25, type: traffic_drop, category: business, filters: {traffic_source: organic},
+   params: {traffic_factor: 0.55}, expected_root_cause: "organic traffic drop",
+   expected_filters: [{traffic_source: organic}], expected_dq_status: PASS, expected_detect: true}
+- {id: S05, date: 2026-03-02, type: app_version_bug, category: business, filters: {os: android, app_version: "5.3.0"},
+   params: {checkout_mult: 0.4}, expected_root_cause: "android 5.3.0 checkout bug",
+   expected_filters: [{os: android, app_version: "5.3.0"}], expected_dq_status: PASS, expected_detect: true}
+- {id: S06, date: 2026-03-07, type: app_version_bug, category: business, filters: {os: ios, app_version: "5.3.0"},
+   params: {atc_mult: 0.5}, expected_root_cause: "ios 5.3.0 add-to-cart bug",
+   expected_filters: [{os: ios, app_version: "5.3.0"}], expected_dq_status: PASS, expected_detect: true}
+- {id: S07, date: 2026-03-12, type: pricing_change, category: business, filters: {category: electronics},
+   params: {amount_mult: 1.3, atc_mult: 0.6}, expected_root_cause: "electronics price increase",
+   expected_filters: [{category: electronics}], expected_dq_status: PASS, expected_detect: true}
+- {id: S08, date: 2026-03-17, type: pricing_change, category: business, filters: {category: fashion},
+   params: {amount_mult: 0.7}, expected_root_cause: "fashion discount lowers AOV",
+   expected_filters: [{category: fashion}], expected_dq_status: PASS, expected_detect: true}
+- {id: S09, date: 2026-03-22, type: regional_outage, category: business, filters: {country: BR},
+   params: {traffic_factor: 0.1}, expected_root_cause: "BR regional outage",
+   expected_filters: [{country: BR}], expected_dq_status: PASS, expected_detect: true}
+- {id: S10, date: 2026-03-27, type: regional_outage, category: business, filters: {country: UK},
+   params: {checkout_mult: 0.3}, expected_root_cause: "UK checkout outage",
+   expected_filters: [{country: UK}], expected_dq_status: PASS, expected_detect: true}
+- {id: S11, date: 2026-04-01, type: stockout, category: business, filters: {category: electronics},
+   params: {atc_mult: 0.1}, expected_root_cause: "electronics stock-out",
+   expected_filters: [{category: electronics}], expected_dq_status: PASS, expected_detect: true}
+- {id: S12, date: 2026-04-06, type: stockout, category: business, filters: {category: grocery},
+   params: {atc_mult: 0.15}, expected_root_cause: "grocery stock-out",
+   expected_filters: [{category: grocery}], expected_dq_status: PASS, expected_detect: true}
