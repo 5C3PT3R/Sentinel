@@ -1,6 +1,6 @@
 # HANDOFF — Sentinel
 
-_Last updated: 2026-10-08 (M4 built, not run against a live LLM)_
+_Last updated: 2026-10-08 (M4 built, not run against a live LLM; repo on GitHub, CI green)_
 
 ## 1. What the project is
 
@@ -45,17 +45,18 @@ A plain-Python state-machine Orchestrator drives the stages, enforces budgets an
 | Item | Status |
 |---|---|
 | PRD (`PRD.md`) | ✅ Written |
-| Repo / git init | ✅ `git init` done, `.gitignore`, no commits yet |
-| M0 Skeleton | ✅ layout, `pyproject.toml`, models, CLI stub, config yamls, CI workflow; `ruff` + `pytest` pass locally |
+| Repo / git | ✅ Pushed to GitHub (`git@github.com:5C3PT3R/Sentinel.git`, branch `master`) |
+| M0 Skeleton | ✅ layout, `pyproject.toml`, models, CLI stub, config yamls, CI workflow; CI green on GitHub (generates `data/sim`, then ruff + pytest) |
 | M1 Simulator | ✅ `sentinel/simulator/{generator,injector}.py`, 28 scenarios in `scenarios/*.yaml`, `sentinel simulate` (writes parquet per table/day, `ground_truth.json`, `revenue.png`); 5 tests pass, ruff clean |
 | M2 Ingestion + DQ | ✅ `sentinel/ingestion/__init__.py` (per-day parquet → DuckDB views, history lookup), `sentinel/quality/__init__.py` (`check_day(data_dir, day) -> DQReport`); `tests/test_quality.py` checks every sim day against ground truth (PASS/WARN/BLOCK all match; skipped if `data/sim` is absent); see DECISIONS D18–D19 |
 | M3 Detection + tools | ✅ `analysis/{cube,metric_tree,drilldown,tools}.py`, `detection/__init__.py`, `evidence/__init__.py`; `tests/test_analysis.py` (LMDI/segment reconciliation exact, Baseline C top-3 ≥ 70%, tools smoke); see DECISIONS D20–D23 |
 | M4 Investigation Agent | ⚠️ Built and tested with a scripted fake LLM only: `llm/__init__.py` (cache, token tally), `agents/investigation.py` + `prompts/investigation.md`, `evidence/verifier.py`, `Tools.segment_contribution`; `tests/test_investigation.py`. **Never run against the real API (no `ANTHROPIC_API_KEY` in this environment)**; see DECISIONS D24–D25 |
+| README | ✅ `README.md` (overview, quick start, layout, roadmap); M8 still needs results + limitations |
 | M5–M8 | ❌ None |
-| `DECISIONS.md` | ✅ Seeded (D1–D4, D6, D8, D9, D16, D17) |
+| `DECISIONS.md` | ✅ D1–D25 (D5, D13–D15 unused; open: §7 items 10–15) |
 | Scenarios | ✅ 28 (12 business, 8 data-issue, 2 Simpson/mix-shift, 2 two-cause, 4 no-anomaly incl. sale day and sub-threshold wobble) |
 
-**In short, M0–M3 are done; M4 is built but unproven live; the next work is M5 (Critic + Reporting) after a live smoke test of M4. Nothing is committed yet. `sentinel run` is still a stub; DQ isn't wired into the CLI.**
+**In short, M0–M3 are done; M4 is built but unproven live; the next work is M5 (Critic + Reporting) after a live smoke test of M4. `sentinel run` is still a stub; DQ isn't wired into the CLI.**
 
 ## 4. What is left (everything, in PRD milestone order)
 
@@ -73,19 +74,19 @@ A plain-Python state-machine Orchestrator drives the stages, enforces budgets an
 
 Definition of done is in PRD §17.
 
-## 5. Changes in the last session
+## 5. Earlier sessions (summary)
 
 - `PRD.md` was authored (outside this tool, or in an earlier session with no saved transcript or memory).
 - No code changes. No earlier Claude Code session history exists for this folder.
 
-## 6. Changes in this session
+## 6. M0 session log
 
 - Read `PRD.md` end to end.
 - Confirmed the workspace contains only `PRD.md` (no code, no git, no earlier memory).
 - Created this `HANDOFF.md`.
 - Completed M0: `git init`, PRD §13 layout, `pyproject.toml` (ruff, pytest, `sentinel` entry point), Pydantic models in `sentinel/models/__init__.py` (with `RejectedHypothesis`), Typer stubs (`simulate`, `run`, `eval` exit 1 "not implemented"), `config/{settings,schema,metric_tree}.yaml`, `DECISIONS.md`, `.github/workflows/ci.yml`, 2 smoke tests.
 - Verified with `python -m ruff check .` and `python -m pytest` (2 passed). Note `ruff` isn't on PATH here; use `python -m ruff`.
-- Not done: no commit made, CI workflow never run remotely, `settings.yaml` isn't loaded by any code yet.
+- Not done at the time: no commit, CI never run remotely (both since resolved, see §6e).
 
 ## 6b. M1 notes (read before M2/M3)
 
@@ -99,7 +100,7 @@ Definition of done is in PRD §17.
 
 - Everything reads from a per-day **cube** (`analysis/cube.py`: all dims x S/A/C/P/O/R counts, cached). `Tools(data_dir, store)` in `analysis/tools.py` exposes get_metric, decompose_metric, drill_down, compare_distributions, check_traffic, get_events, correlate, plus `find_causes` (automatic tree walk + drill-down = Baseline C). Each returns `{evidence_id, query, result, computed_at}` and stores Evidence. Dates are ISO strings, baseline is `"weekday"` or `"trailing7"`.
 - Not done: tool JSON schemas for the LLM (M4); `sentinel run` still a stub, so DQ, detection and tools are not wired into the CLI or an orchestrator; `Tools.find_causes` results contain plain dicts that may hold numpy scalars (fine for `store.save`, check if you add other serializers).
-- Baseline C: 10/14 exact, 12/14 overlap on single-cause scenarios (D23). Weak spots: scenarios with a true effect under ~6% (noise floor), S05, and the second cause in two-cause scenarios (S23 misses paid-traffic drop, S24 misses BR). Hypothesis `contribution_pct` should come from `find_causes` `contribution` (product of tree shares and segment shares, capped at 1).
+- Baseline C: 10/14 exact, 12/14 overlap on single-cause scenarios (D23). Weak spots: scenarios with a true effect under ~6% (noise floor), S05, and the second cause in two-cause scenarios (S23 misses paid-traffic drop, S24 misses BR). The Investigation agent does not use `find_causes`; its `contribution_pct` comes from `segment_contribution` (D25).
 - Detection needs a clean data day; schema-change days (S15/S16) break the cube, so always run `check_day` first and stop on BLOCK (invariant 3).
 - Test suite takes ~40s (two full sweeps need data/sim).
 
@@ -111,7 +112,19 @@ Definition of done is in PRD §17.
 - Acceptance "hypotheses carry evidence ids; no numbers outside tool output" is proven only for scripted inputs. Real accuracy vs Baseline C is an M6 question.
 - `sentinel run` is still a stub; no orchestrator exists yet (DQ -> detect -> investigate -> critic -> report).
 
+## 6e. GitHub + repo fixes (2026-10-08)
+
+- Initial commit pushed to GitHub; CI runs on push/PR and is green.
+- `sentinel/agents/__init__.py` was missing, so a non-editable install dropped the investigation agent; added it, and `prompts/*.md` ships as package data (`pyproject.toml`).
+- CI now runs `sentinel simulate --out data/sim --no-plot` before pytest; before this every data-dependent test silently skipped on GitHub. CI takes ~1.5 min.
+- CI actions bumped to `checkout@v5` / `setup-python@v6` (Node 20 deprecation).
+- `investigate`: a hypothesis with invalid `segment_filters` is now dropped (logged in `dropped`) instead of crashing the run.
+- Added `README.md`.
+- Known limit: `config/` is read relative to the source tree (`sentinel/config.py` ROOT), so Sentinel only works from a checkout / editable install.
+
 ## 7. Places to improve (PRD gaps and risks to settle before or while building)
+
+_Status: items 1–9, 16–18 are resolved (D1–D4, D6, D7, D8, D16, D17, D22). Still open: 10 (Critic budget / which checks are pure code), 11 (verifier rules: first version in `evidence/verifier.py`, D25), 12 (Baseline A sandbox), 13 (cost/pricing), 14–15 (eval matching rules)._
 
 Record each resolution in `DECISIONS.md`, as the PRD instructs.
 
@@ -145,4 +158,4 @@ Record each resolution in `DECISIONS.md`, as the PRD instructs.
 
 ## 8. Suggested next step
 
-First a live smoke test of M4 with an API key (S11 on 2026-04-01 is the easy case, S05 or S23 the hard ones). Then M5: Critic checks (§8 of the PRD; decide which are pure code, §7 item 10), confidence in code, report writer with the numeric check, MD + JSON output. Make the first git commit first (nothing is committed yet).
+First a live smoke test of M4 with an API key (S11 on 2026-04-01 is the easy case, S05 or S23 the hard ones). Then M5: Critic checks (§8 of the PRD; decide which are pure code, §7 item 10), confidence in code, report writer with the numeric check, MD + JSON output. Keep CI green: data tests only run because CI generates `data/sim` first.
